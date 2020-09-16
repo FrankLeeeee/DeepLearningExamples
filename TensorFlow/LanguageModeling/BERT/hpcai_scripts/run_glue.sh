@@ -12,6 +12,8 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+export BERT_DIR=/home/public/bert/model/wwm_uncased_L-24_H-1024_A-16
+export GLUE_DIR=/home/public/bert/data/glue_data
 
 echo "Container nvidia build = " $NVIDIA_BUILD_ID
 
@@ -23,13 +25,11 @@ use_xla=${5:-"true"}
 num_gpu=${6:-"8"}
 seq_length=${7:-"128"}
 doc_stride=${8:-"64"}
-
-export BERT_DIR=/home/public/bert/model/wwm_uncased_L-24_H-1024_A-16
-export GLUE_DIR=/home/public/bert/data/glue_data
-
-epochs=${10:-"3.0"}
-ws=${11:-"0.1"}
-init_checkpoint=${12:-"$BERT_DIR/bert_model.ckpt"}
+gradient_checkpointing=${9:-"checkpointing"}
+ckpt_mode=${10:-"none"}
+epochs=${11:-"3.0"}
+ws=${12:-"0.1"}
+init_checkpoint=${13:-"$BERT_DIR/bert_model.ckpt"}
 
 echo "GLUE directory set as " $GLUE_DIR " BERT directory set as " $BERT_DIR
 
@@ -49,6 +49,13 @@ else
     use_xla_tag="--nouse_xla"
 fi
 
+if [ "$gradient_checkpointing" = "checkpointing" ] ; then
+    use_gradient_checkpointing="--grad_checkpointing"
+    echo "gradient checkpointing activated"
+else
+    use_gradient_checkpointing="--nograd_checkpointing"
+fi
+
 if [ $num_gpu -gt 1 ] ; then
     mpi_command="mpirun -np $num_gpu -H localhost:$num_gpu \
     --allow-run-as-root -bind-to none -map-by slot \
@@ -63,7 +70,7 @@ export GBS=$(expr $batch_size \* $num_gpu)
 printf -v TAG "tf_bert_finetuning_glue_%s_%s_%s_gbs%d" "$task_name" "$bert_model" "$precision" $GBS
 DATESTAMP=`date +'%y%m%d%H%M%S'`
 #Edit to save logs & checkpoints in a different directory
-RESULTS_DIR=/home/shenggui/HPCAI-2020/results/${TAG}_${DATESTAMP}
+RESULTS_DIR=/home/shenggui/HPCAI-2020/results
 LOGFILE=$RESULTS_DIR/$TAG.$DATESTAMP.log
 mkdir -m 777 -p $RESULTS_DIR
 printf "Saving checkpoints to %s\n" "$RESULTS_DIR"
@@ -95,4 +102,7 @@ $mpi_command python run_classifier.py \
   --horovod \
   "$use_fp16" \
   --dllog_path $RESULTS_DIR/bert_dllog.json \
-  $use_xla_tag --warmup_proportion=$ws |& tee $LOGFILE
+  $use_xla_tag \
+  $use_gradient_checkpointing \
+  --ckpt_mode=$ckpt_mode \
+  --warmup_proportion=$ws |& tee $LOGFILE
