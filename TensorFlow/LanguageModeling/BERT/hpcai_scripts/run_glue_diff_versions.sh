@@ -17,17 +17,18 @@ export GLUE_DIR=/home/public/bert/data/glue_data
 
 echo "Container nvidia build = " $NVIDIA_BUILD_ID
 
-task_name=${1:-"MNLI"}
-batch_size=${2:-"16"}
-learning_rate=${3:-"3e-6"}
-precision=${4:-"fp16"}
-use_xla=${5:-"true"}
-num_gpu=${6:-"8"}
-seq_length=${7:-"128"}
-doc_stride=${8:-"64"}
-epochs=${9:-"3.0"}
-ws=${10:-"0.1"}
-init_checkpoint=${11:-"$BERT_DIR/bert_model.ckpt"}
+version=${1:-"0"}
+task_name=${2:-"MNLI"}
+batch_size=${3:-"16"}
+learning_rate=${4:-"3e-6"}
+precision=${5:-"fp16"}
+use_xla=${6:-"true"}
+num_gpu=${7:-"8"}
+seq_length=${8:-"128"}
+doc_stride=${9:-"64"}
+epochs=${10:-"3.0"}
+ws=${11:-"0.1"}
+init_checkpoint=${12:-"$BERT_DIR/bert_model.ckpt"}
 
 echo "GLUE directory set as " $GLUE_DIR " BERT directory set as " $BERT_DIR
 
@@ -50,7 +51,8 @@ fi
 
 if [ $num_gpu -gt 1 ] ; then
     mpi_command="mpirun -np $num_gpu -H localhost:$num_gpu \
-    --allow-run-as-root -bind-to none -map-by slot \
+    --allow-run-as-root \
+    -bind-to none -map-by slot \
     -x NCCL_DEBUG=INFO \
     -x LD_LIBRARY_PATH \
     -x PATH -mca pml ob1 -mca btl ^openib"
@@ -58,7 +60,11 @@ else
     mpi_command=""
 fi
 
+
+python_file="run_classifier_v${version}.py"
+
 export GBS=$(expr $batch_size \* $num_gpu)
+
 printf -v TAG "tf_bert_finetuning_glue_%s_%s_%s_gbs%d" "$task_name" "$bert_model" "$precision" $GBS
 DATESTAMP=`date +'%y%m%d%H%M%S'`
 #Edit to save logs & checkpoints in a different directory
@@ -77,7 +83,7 @@ for DIR_or_file in $GLUE_DIR/${task_name} $RESULTS_DIR $BERT_DIR/vocab.txt $BERT
   fi
 done
 
-$mpi_command python run_classifier.py \
+$mpi_command python $python_file \
   --task_name=$task_name \
   --do_train=true \
   --do_eval=true \

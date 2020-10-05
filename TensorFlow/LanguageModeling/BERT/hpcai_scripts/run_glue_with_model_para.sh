@@ -49,8 +49,9 @@ fi
 
 
 if [ $num_gpu -gt 1 ] ; then
-    mpi_command="mpirun -np $num_gpu -H localhost:$num_gpu \
-    --allow-run-as-root -bind-to none -map-by slot \
+    mpi_command="mpirun -np 1 -H localhost:1 \
+    --allow-run-as-root \
+    -bind-to none -map-by slot \
     -x NCCL_DEBUG=INFO \
     -x LD_LIBRARY_PATH \
     -x PATH -mca pml ob1 -mca btl ^openib"
@@ -58,7 +59,11 @@ else
     mpi_command=""
 fi
 
+
+python_file="run_classifier_v2.py"
+
 export GBS=$(expr $batch_size \* $num_gpu)
+
 printf -v TAG "tf_bert_finetuning_glue_%s_%s_%s_gbs%d" "$task_name" "$bert_model" "$precision" $GBS
 DATESTAMP=`date +'%y%m%d%H%M%S'`
 #Edit to save logs & checkpoints in a different directory
@@ -77,7 +82,7 @@ for DIR_or_file in $GLUE_DIR/${task_name} $RESULTS_DIR $BERT_DIR/vocab.txt $BERT
   fi
 done
 
-$mpi_command python run_classifier.py \
+$mpi_command python $python_file \
   --task_name=$task_name \
   --do_train=true \
   --do_eval=true \
