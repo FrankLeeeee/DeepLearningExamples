@@ -1015,7 +1015,7 @@ def transformer_model(input_tensor,
                         batch_size=batch_size,
                         from_seq_length=seq_length,
                         to_seq_length=seq_length,
-                        ckpt=layer_idx % 2 == 1)
+                        ckpt=True)
                     attention_heads.append(attention_head)
 
                 attention_output = None
@@ -1038,8 +1038,7 @@ def transformer_model(input_tensor,
                                 initializer_range))
                         return output
 
-                    if layer_idx % 2 == 0:
-                        dense_output = tf.contrib.layers.recompute_grad(
+                    dense_output = tf.contrib.layers.recompute_grad(
                             dense_output)
                     attention_output = dense_output(attention_output)
 
@@ -1065,8 +1064,7 @@ def transformer_model(input_tensor,
                             initializer_range))
                     return output
 
-                if layer_idx % 2 == 1:
-                    dense_intermediate = tf.contrib.layers.recompute_grad(
+                dense_intermediate = tf.contrib.layers.recompute_grad(
                         dense_intermediate)
                 intermediate_output = dense_intermediate(attention_output)
 
@@ -1087,8 +1085,7 @@ def transformer_model(input_tensor,
                             initializer_range))
                     return output
 
-                if layer_idx % 2 == 0:
-                    dense_output_2 = tf.contrib.layers.recompute_grad(
+                dense_output_2 = tf.contrib.layers.recompute_grad(
                         dense_output_2)
                 layer_output = dense_output_2(intermediate_output)
 

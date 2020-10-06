@@ -29,8 +29,8 @@ from __future__ import print_function
 import collections
 import csv
 import os
-import modeling_v2 as modeling
-import optimization_v0 as optimization
+import modeling_v0 as modeling
+import optimization_v1 as optimization
 import tokenization
 import tensorflow as tf
 import horovod.tensorflow as hvd
@@ -227,6 +227,14 @@ def create_model(bert_config, is_training, input_ids, input_mask, segment_ids,
         if is_training:
             # I.e., 0.1 dropout
             output_layer = tf.nn.dropout(output_layer, keep_prob=0.9)
+
+        # def calc_logits(x, w):
+        #     logits = tf.matmul(x, w, transpose_b=True)
+        #     return logits
+        
+        # calc_logits = tf.contrib.layers.recompute_grad(calc_logits)
+        # logits = calc_logits(output_layer, output_weights)
+
 
         logits = tf.matmul(output_layer, output_weights, transpose_b=True)
         logits = tf.nn.bias_add(logits, output_bias, name='cls_logits')
@@ -571,7 +579,7 @@ def main(_):
     config = tf.compat.v1.ConfigProto()
 
     # does not consume all GPU RAM
-    config.gpu_options.per_process_gpu_memory_fraction = 0.48
+    # config.gpu_options.per_process_gpu_memory_fraction = 0.48
 
     if FLAGS.horovod:
 
@@ -661,9 +669,9 @@ def main(_):
 
     if FLAGS.do_train:
 
-        # file_based_convert_examples_to_features(
-        #     train_examples[start_index:end_index], label_list,
-        #     FLAGS.max_seq_length, tokenizer, tmp_filenames[hvd_rank])
+#         file_based_convert_examples_to_features(
+#             train_examples[start_index:end_index], label_list,
+#             FLAGS.max_seq_length, tokenizer, tmp_filenames[hvd_rank])
 
         tf.compat.v1.logging.info("***** Running training *****")
         tf.compat.v1.logging.info("  Num examples = %d", len(train_examples))
