@@ -12,8 +12,8 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-export BERT_DIR=/home/public/bert/model/wwm_uncased_L-24_H-1024_A-16
-export GLUE_DIR=/home/public/bert/data/glue_data
+export BERT_DIR=/home/users/ntu/c170166/projects/HPCAI-2020/model/wwm_uncased_L-24_H-1024_A-16
+export GLUE_DIR=/home/users/ntu/c170166/projects/HPCAI-2020/dataset/glue_data
 
 echo "Container nvidia build = " $NVIDIA_BUILD_ID
 
@@ -62,7 +62,7 @@ export GBS=$(expr $batch_size \* $num_gpu)
 printf -v TAG "tf_bert_finetuning_glue_%s_%s_%s_gbs%d" "$task_name" "$bert_model" "$precision" $GBS
 DATESTAMP=`date +'%y%m%d%H%M%S'`
 #Edit to save logs & checkpoints in a different directory
-RESULTS_DIR=/home/shenggui/HPCAI-2020/results
+RESULTS_DIR=/home/users/ntu/c170166/projects/HPCAI-2020/results
 LOGFILE=$RESULTS_DIR/$TAG.$DATESTAMP.log
 mkdir -m 777 -p $RESULTS_DIR
 printf "Saving checkpoints to %s\n" "$RESULTS_DIR"

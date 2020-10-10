@@ -20,8 +20,6 @@ import json
 import math
 import os
 import random
-import modeling_v0
-import optimization_v0
 import tokenization
 import six
 import tensorflow as tf
