@@ -256,7 +256,7 @@ class BertModel(object):
                         activation=tf.tanh,
                         kernel_initializer=create_initializer(0.02))
 
-                pool_output = tf.contrib.layers.recompute_grad(pool_output)
+                # pool_output = tf.contrib.layers.recompute_grad(pool_output)
                 self.pooled_output = pool_output(first_token_tensor)
                 # self.pooled_output = tf.layers.dense(
                 #     first_token_tensor,
@@ -1015,8 +1015,8 @@ def transformer_model(input_tensor,
                         batch_size=batch_size,
                         from_seq_length=seq_length,
                         to_seq_length=seq_length,
-                        #ckpt=False)
-			ckpt=layer_idx%3==0)
+                        ckpt=False)
+			#ckpt=layer_idx%2==0)
                     attention_heads.append(attention_head)
 
                 attention_output = None
@@ -1039,8 +1039,8 @@ def transformer_model(input_tensor,
                                 initializer_range))
                         return output
 
-                    dense_output = tf.contrib.layers.recompute_grad(
-                            dense_output)
+                    #dense_output = tf.contrib.layers.recompute_grad(
+                    #        dense_output)
                     attention_output = dense_output(attention_output)
 
                     # attention_output = tf.layers.dense(
@@ -1065,8 +1065,8 @@ def transformer_model(input_tensor,
                             initializer_range))
                     return output
 
-                dense_intermediate = tf.contrib.layers.recompute_grad(
-                        dense_intermediate)
+                #dense_intermediate = tf.contrib.layers.recompute_grad(
+                #        dense_intermediate)
                 intermediate_output = dense_intermediate(attention_output)
 
                 # intermediate_output = tf.layers.dense(
@@ -1086,8 +1086,8 @@ def transformer_model(input_tensor,
                             initializer_range))
                     return output
 
-                dense_output_2 = tf.contrib.layers.recompute_grad(
-                        dense_output_2)
+                #dense_output_2 = tf.contrib.layers.recompute_grad(
+                #        dense_output_2)
                 layer_output = dense_output_2(intermediate_output)
 
                 # layer_output = tf.layers.dense(

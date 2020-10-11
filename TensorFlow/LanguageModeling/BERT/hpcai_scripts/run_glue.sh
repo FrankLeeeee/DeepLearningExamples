@@ -18,7 +18,7 @@ export GLUE_DIR=/home/public/bert/data/glue_data
 echo "Container nvidia build = " $NVIDIA_BUILD_ID
 
 task_name=${1:-"MNLI"}
-batch_size=${2:-"36"}
+batch_size=${2:-"40"}
 learning_rate=${3:-"5e-5"}
 precision=${4:-"fp16"}
 use_xla=${5:-"true"}
