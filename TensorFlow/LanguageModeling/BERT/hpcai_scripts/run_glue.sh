@@ -12,17 +12,17 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-export BERT_DIR=/home/users/ntu/c170166/projects/HPCAI-2020/model/wwm_uncased_L-24_H-1024_A-16
-export GLUE_DIR=/home/users/ntu/c170166/projects/HPCAI-2020/dataset/glue_data
+export BERT_DIR=/home/public/bert/model/wwm_uncased_L-24_H-1024_A-16
+export GLUE_DIR=/home/public/bert/data/glue_data
 
 echo "Container nvidia build = " $NVIDIA_BUILD_ID
 
 task_name=${1:-"MNLI"}
-batch_size=${2:-"16"}
-learning_rate=${3:-"3e-6"}
+batch_size=${2:-"36"}
+learning_rate=${3:-"5e-5"}
 precision=${4:-"fp16"}
 use_xla=${5:-"true"}
-num_gpu=${6:-"8"}
+num_gpu=${6:-"2"}
 seq_length=${7:-"128"}
 doc_stride=${8:-"64"}
 epochs=${9:-"3.0"}
@@ -62,7 +62,7 @@ export GBS=$(expr $batch_size \* $num_gpu)
 printf -v TAG "tf_bert_finetuning_glue_%s_%s_%s_gbs%d" "$task_name" "$bert_model" "$precision" $GBS
 DATESTAMP=`date +'%y%m%d%H%M%S'`
 #Edit to save logs & checkpoints in a different directory
-RESULTS_DIR=/home/users/ntu/c170166/projects/HPCAI-2020/results
+RESULTS_DIR=/home/shenggui/HPCAI-2020/results
 LOGFILE=$RESULTS_DIR/$TAG.$DATESTAMP.log
 mkdir -m 777 -p $RESULTS_DIR
 printf "Saving checkpoints to %s\n" "$RESULTS_DIR"
@@ -80,7 +80,7 @@ done
 $mpi_command python run_classifier.py \
   --task_name=$task_name \
   --do_train=true \
-  --do_eval=true \
+  --do_eval=false \
   --data_dir=$GLUE_DIR/$task_name \
   --vocab_file=$BERT_DIR/vocab.txt \
   --bert_config_file=$BERT_DIR/bert_config.json \
@@ -95,4 +95,5 @@ $mpi_command python run_classifier.py \
   "$use_fp16" \
   --dllog_path $RESULTS_DIR/bert_dllog.json \
   $use_xla_tag \
+  --save_checkpoints_steps 1000000 \
   --warmup_proportion=$ws |& tee $LOGFILE

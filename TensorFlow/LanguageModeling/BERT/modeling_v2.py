@@ -1015,7 +1015,8 @@ def transformer_model(input_tensor,
                         batch_size=batch_size,
                         from_seq_length=seq_length,
                         to_seq_length=seq_length,
-                        ckpt=True)
+                        #ckpt=False)
+			ckpt=layer_idx%3==0)
                     attention_heads.append(attention_head)
 
                 attention_output = None

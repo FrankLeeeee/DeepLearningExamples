@@ -580,7 +580,7 @@ def main(_):
     config = tf.compat.v1.ConfigProto()
 
     # does not consume all GPU RAM
-    # config.gpu_options.per_process_gpu_memory_fraction = 0.48
+    config.gpu_options.per_process_gpu_memory_fraction = 0.48
 
     if FLAGS.horovod:
 
@@ -607,10 +607,11 @@ def main(_):
     run_config = tf.estimator.RunConfig(
         model_dir=FLAGS.output_dir if master_process else None,
         session_config=config,
-        save_checkpoints_steps=FLAGS.save_checkpoints_steps
+        save_checkpoints_secs=60*17
+#        save_checkpoints_steps=FLAGS.save_checkpoints_steps
         if master_process else None,
-        save_summary_steps=FLAGS.save_checkpoints_steps
-        if master_process else None,
+#        save_summary_steps=FLAGS.save_checkpoints_steps
+#        if master_process else None,
         log_step_count_steps=FLAGS.display_loss_steps,
         keep_checkpoint_max=1)
 
